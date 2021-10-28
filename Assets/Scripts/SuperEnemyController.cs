@@ -104,7 +104,7 @@ public class SuperEnemyController : MonoBehaviour
         _playerController.PlaySound(hit);
         if (_healthPoint <= 0)
         {
-            _playerController.UpdateScore(50);
+            _playerController.UpdateScore(33);
             Destroy(gameObject);
         }
     }

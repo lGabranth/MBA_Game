@@ -25,9 +25,11 @@ public class Fireball : MonoBehaviour
     {
         EnemyController enemi1 = other.collider.GetComponent<EnemyController>();
         SuperEnemyController enemi2 = other.collider.GetComponent<SuperEnemyController>();
+        NpcController npc = other.collider.GetComponent<NpcController>();
 
         if(enemi1 != null) enemi1.Damage(1000);
         if(enemi2 != null) enemi2.Damage(1000);
+        if(npc != null) npc.Talk();
 
         Instantiate(explosionPrefab, _rigidbody2D.position, Quaternion.identity);
         _player.PlaySound(throwFireball);

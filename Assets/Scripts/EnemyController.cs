@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using Random = System.Random;
 
 public class EnemyController : MonoBehaviour
 {
@@ -94,7 +95,7 @@ public class EnemyController : MonoBehaviour
         _playerController.PlaySound(hit);
         if (_healthPoint <= 0)
         {
-            _playerController.UpdateScore(50);
+            _playerController.UpdateScore(15);
             Destroy(gameObject);
         }
     }

@@ -25,9 +25,11 @@ public class Projectile : MonoBehaviour
     {
         EnemyController enemi1 = other.collider.GetComponent<EnemyController>();
         SuperEnemyController enemi2 = other.collider.GetComponent<SuperEnemyController>();
+        NpcController npc = other.collider.GetComponent<NpcController>();
 
         if(enemi1 != null) enemi1.Damage(50);
         if(enemi2 != null) enemi2.Damage(50);
+        if(npc != null) npc.Talk();
         Destroy(gameObject);
     }
 }

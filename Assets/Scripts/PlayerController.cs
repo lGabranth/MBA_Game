@@ -45,6 +45,7 @@ public class PlayerController : MonoBehaviour
     private bool _hasCheese;
     private bool _hasAlgae;
     private bool _hasMeat;
+    private bool _AoeAttacks;
 
     /* SECTION AUDIO */
     private AudioSource _audioSource;
@@ -56,11 +57,12 @@ public class PlayerController : MonoBehaviour
     /* SECTION TEXTMESHPRO */
     private TextMeshProUGUI _deathCounter;
     public TextMeshProUGUI scoreDisplay;
+    public TextMeshProUGUI lifeDisplay;
 
     /* SECTION NUMBERS */
     private int _deathNumber;
     private int _score; // Score (100 = 1 vie)
-    private int _lifes; // Nombre de vies
+    private int _lives = 2; // Nombre de vies
     private float _radiusOfAttack = 2f; // Taille des AOE
 
     private void Awake()
@@ -226,9 +228,9 @@ public class PlayerController : MonoBehaviour
 
         _deathNumber++;
         _deathCounter.SetText($"Death : {_deathNumber}");
-        UpdateScore(-50);
+        UpdateLife(-1);
 
-        if (_score <= 0) YouLost();
+        if (_lives < 0) YouLost();
 
         // On retéléporte le joueur à l'entrée du niveau
         _translation.x = 0;
@@ -255,7 +257,7 @@ public class PlayerController : MonoBehaviour
      */
     public void LevelUp()
     {
-        // Si le joueur a déjà rammasé un upgrade, il obtient l'arme ultime
+        // Si le joueur a déjà ramassé un upgrade, il obtient l'arme ultime
         // Sinon il obtient juste les attaques à distance
         if (_hasImprovedWeapon)
         {
@@ -277,6 +279,8 @@ public class PlayerController : MonoBehaviour
         {
             barrel.GetComponent<ExplodingStuff>().Explode();
         }
+
+        GameObject.Find("DarkWizard").gameObject.GetComponent<NpcController>().ToggleAvailability();
     }
 
     // Vérifie si on obtient le fromage
@@ -306,12 +310,35 @@ public class PlayerController : MonoBehaviour
     public void UpdateScore(int score)
     {
         _score += score;
+        if (_score >= 100)
+        {
+            UpdateLife(_score / 100);
+            _score -= 100;
+        }
         UpdateScoreDisplay();
+    }
+
+    // Met à jour les PV
+    private void UpdateLife(int life)
+    {
+        _lives += life;
+        UpdateLivesDisplay();
     }
 
     // Met à jour le score visuellement
     private void UpdateScoreDisplay()
     {
         scoreDisplay.SetText($"Score : {_score}");
+    }
+
+    // Met à jour le nombre de vies visuellement
+    private void UpdateLivesDisplay()
+    {
+        lifeDisplay.SetText($"Lives : {_lives}");
+    }
+
+    public void EnableAoeWeapon()
+    {
+        _AoeAttacks = true;
     }
 }
