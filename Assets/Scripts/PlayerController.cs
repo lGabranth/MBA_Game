@@ -5,6 +5,7 @@ using Cinemachine;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -16,7 +17,9 @@ public class PlayerController : MonoBehaviour
     public GameObject prefabDeath;
     public GameObject prefabFireplaceDeath;
     public GameObject projectilePrefab;
+    public GameObject aoeProjectilePrefab;
     public GameObject ultimateProjectilePrefab;
+    public GameObject aoeUltimateProjectilePrefab;
     public GameObject cheeseImage;
     public GameObject algaeImage;
     public GameObject meatImage;
@@ -45,7 +48,7 @@ public class PlayerController : MonoBehaviour
     private bool _hasCheese;
     private bool _hasAlgae;
     private bool _hasMeat;
-    private bool _AoeAttacks;
+    private bool _aoeAttacks;
 
     /* SECTION AUDIO */
     private AudioSource _audioSource;
@@ -58,12 +61,14 @@ public class PlayerController : MonoBehaviour
     private TextMeshProUGUI _deathCounter;
     public TextMeshProUGUI scoreDisplay;
     public TextMeshProUGUI lifeDisplay;
+    public TextMeshProUGUI ammoCount;
 
     /* SECTION NUMBERS */
     private int _deathNumber;
     private int _score; // Score (100 = 1 vie)
     private int _lives = 2; // Nombre de vies
     private float _radiusOfAttack = 2f; // Taille des AOE
+    private int _aoeCount = 5;
 
     private void Awake()
     {
@@ -96,6 +101,8 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        // Afficher la touche à l'écran + indicateur
+
         // Gérer les déplacements
         float translationX = Input.GetAxis("Horizontal");
         float translationY = Input.GetAxis("Vertical");
@@ -122,6 +129,21 @@ public class PlayerController : MonoBehaviour
             else ThrowFist();
         }
 
+        // Gérer les grenades
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            if (_aoeAttacks)
+            {
+                if (_aoeCount > 0)
+                {
+                    if (_hasUltimatePower) ThrowAmazingFireball();
+                    else ThrowAmazingProjectile();
+                    --_aoeCount;
+                    UpdateAmmoCount();
+                }
+            }
+        }
+
         // Gérer le sprint
         if (Input.GetKeyDown(KeyCode.LeftShift)) speed = 8f;
         if (Input.GetKeyUp(KeyCode.LeftShift)) speed = 4f;
@@ -139,10 +161,7 @@ public class PlayerController : MonoBehaviour
      */
     private void YouWon()
     {
-        ToggleActive(new [] { GameObject.Find("BackgroundMusic"), wonImage, GameObject.Find("Enemies") });
-        /*GameObject.Find("BackgroundMusic").SetActive(false);
-        wonImage.SetActive(true);
-        GameObject.Find("Enemies").SetActive(false);*/
+        ToggleActive(new [] { GameObject.Find("BackgroundMusic").gameObject, wonImage, GameObject.Find("Enemies").gameObject });
         PlaySound(fanfare);
     }
 
@@ -152,11 +171,9 @@ public class PlayerController : MonoBehaviour
      */
     private void YouLost()
     {
-        ToggleActive(new [] { GameObject.Find("BackgroundMusic"), lostImage, GameObject.Find("Enemies") });
-        /*GameObject.Find("BackgroundMusic").SetActive(false);
-        lostImage.SetActive(true);
-        GameObject.Find("Enemies").SetActive(false);*/
+        ToggleActive(new [] { GameObject.Find("BackgroundMusic").gameObject, lostImage, GameObject.Find("Enemies").gameObject });
         PlaySound(lostFanfare);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     /**
@@ -166,7 +183,6 @@ public class PlayerController : MonoBehaviour
     {
         GameObject projectileObject = Instantiate(ultimateProjectilePrefab, (_rigidbody2D.position + Vector2.up * 0.5f),
             Quaternion.identity);
-
         Fireball projectile = projectileObject.GetComponent<Fireball>();
         projectile.Launch(_lookDirection, 600);
         _animator.SetTrigger("Attack");
@@ -179,7 +195,6 @@ public class PlayerController : MonoBehaviour
     {
         GameObject projectileObject = Instantiate(projectilePrefab, (_rigidbody2D.position + Vector2.up * 0.5f),
             Quaternion.identity);
-
         Projectile projectile = projectileObject.GetComponent<Projectile>();
         projectile.Launch(_lookDirection, 300);
         _animator.SetTrigger("Attack");
@@ -339,6 +354,31 @@ public class PlayerController : MonoBehaviour
 
     public void EnableAoeWeapon()
     {
-        _AoeAttacks = true;
+        _aoeAttacks = true;
+        UpdateAmmoCount();
+    }
+
+    private void ThrowAmazingFireball()
+    {
+        GameObject projectileObject = Instantiate(aoeUltimateProjectilePrefab, (_rigidbody2D.position + Vector2.up * 0.5f),
+                Quaternion.identity);
+        AmazingFireball projectile = projectileObject.GetComponent<AmazingFireball>();
+        projectile.Launch(_lookDirection, 600);
+        _animator.SetTrigger("Attack");
+    }
+
+    private void ThrowAmazingProjectile()
+    {
+        GameObject projectileObject = Instantiate(aoeProjectilePrefab, (_rigidbody2D.position + Vector2.up * 0.5f),
+                Quaternion.identity);
+        AmazingArrow projectile = projectileObject.GetComponent<AmazingArrow>();
+        projectile.Launch(_lookDirection, 600);
+        _animator.SetTrigger("Attack");
+    }
+
+    private void UpdateAmmoCount()
+    {
+        ammoCount.SetText($"{_aoeCount}");
+        if (_aoeCount == 0) ammoCount.color = Color.red;
     }
 }

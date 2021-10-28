@@ -35,11 +35,16 @@ public class AmazingFireball : MonoBehaviour
         Destroy(gameObject);
 
         // Cercle autour de la zone d'explosion
-        // Calculer les positions autour du cercle pour instantier des fireballs
-        /*
-         * x = R x Sin(angle)
-         * y = R x Cos(angle)
-         */
-        // Partir du centre du cercle vers chaque point pour calculer le sens de poussée des projectiles
+        float radius = 2f;
+        for (int i = 0; i < 8; i++)
+        {
+            float angle = i * Mathf.PI*2f / 8;
+            var position = transform.position;
+            Vector3 newPos = new Vector3(position.x + Mathf.Cos(angle)*radius, position.y + Mathf.Sin(angle)*radius, position.z);
+            GameObject go = Instantiate(projectilePrefab, newPos, Quaternion.identity);
+            Fireball projectile = go.GetComponent<Fireball>();
+
+            projectile.Launch(new Vector2(Mathf.Cos(angle)*radius, Mathf.Sin(angle)*radius), 600);
+        }
     }
 }
