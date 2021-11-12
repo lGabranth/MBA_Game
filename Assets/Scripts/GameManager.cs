@@ -55,6 +55,12 @@ public class GameManager : MonoBehaviour
     {
         Ui.DisplayLost();
         Audio.PlayLostFanfare();
+        StartCoroutine(StartAgain());
+    }
+
+    IEnumerator StartAgain()
+    {
+        yield return new WaitForSeconds(2.5f);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
