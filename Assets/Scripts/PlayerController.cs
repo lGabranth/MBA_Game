@@ -12,24 +12,16 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D _rigidbody2D;
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
+    private GameManager _gameManager;
 
     /* SECTION GAMEOBJECT */
+    public GameObject gameManager;
     public GameObject prefabDeath;
     public GameObject prefabFireplaceDeath;
     public GameObject projectilePrefab;
     public GameObject aoeProjectilePrefab;
     public GameObject ultimateProjectilePrefab;
     public GameObject aoeUltimateProjectilePrefab;
-    public GameObject cheeseImage;
-    public GameObject algaeImage;
-    public GameObject meatImage;
-    public GameObject swordImage;
-    public GameObject bowImage;
-    public GameObject magicImage;
-    public GameObject wonImage;
-    public GameObject lostImage;
-    public GameObject deathCount;
-    public GameObject menuPause;
 
     /* SECTION VECTORS */
     private Vector2 _translation; // Pour gérer les déplacements
@@ -54,14 +46,6 @@ public class PlayerController : MonoBehaviour
     private AudioSource _audioSource;
     public AudioClip deathScream;
     public AudioClip normalAttack;
-    public AudioClip fanfare;
-    public AudioClip lostFanfare;
-
-    /* SECTION TEXTMESHPRO */
-    private TextMeshProUGUI _deathCounter;
-    public TextMeshProUGUI scoreDisplay;
-    public TextMeshProUGUI lifeDisplay;
-    public TextMeshProUGUI ammoCount;
 
     /* SECTION NUMBERS */
     private int _deathNumber;
@@ -69,6 +53,9 @@ public class PlayerController : MonoBehaviour
     private int _lives = 2; // Nombre de vies
     private float _radiusOfAttack = 2f; // Taille des AOE
     private int _aoeCount = 5;
+    private static readonly int Attack = Animator.StringToHash("Attack");
+    private static readonly int TranslationX = Animator.StringToHash("translationX");
+    private static readonly int TranslationY = Animator.StringToHash("translationY");
 
     private void Awake()
     {
@@ -76,27 +63,10 @@ public class PlayerController : MonoBehaviour
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _audioSource = GetComponent<AudioSource>();
-        _deathCounter = deathCount.GetComponent<TextMeshProUGUI>();
+        _gameManager = gameManager.GetComponent<GameManager>();
 
         _score = 0;
         _deathNumber = 0;
-
-        ToggleActive(
-            new[] { menuPause, cheeseImage, algaeImage, meatImage, bowImage, magicImage, wonImage, lostImage }
-        );
-    }
-
-    private void ToggleActive(GameObject[] elem)
-    {
-        foreach (GameObject gO in elem)
-        {
-            gO.SetActive(!gO.activeSelf);
-        }
-    }
-
-    private void ToggleActive(GameObject elem)
-    {
-        elem.SetActive(!elem.activeSelf);
     }
 
     private void Update()
@@ -118,8 +88,8 @@ public class PlayerController : MonoBehaviour
         }
 
         // Animation de déplacement
-        _animator.SetFloat("translationX", translationX);
-        _animator.SetFloat("translationY", translationY);
+        _animator.SetFloat(TranslationX, translationX);
+        _animator.SetFloat(TranslationY, translationY);
 
         // Gérer l'attaque
         if (Input.GetKeyDown(KeyCode.Space))
@@ -132,15 +102,11 @@ public class PlayerController : MonoBehaviour
         // Gérer les grenades
         if (Input.GetKeyDown(KeyCode.C))
         {
-            if (_aoeAttacks)
+            if (_aoeAttacks && _aoeCount > 0)
             {
-                if (_aoeCount > 0)
-                {
-                    if (_hasUltimatePower) ThrowAmazingFireball();
-                    else ThrowAmazingProjectile();
-                    --_aoeCount;
-                    UpdateAmmoCount();
-                }
+                if (_hasUltimatePower) ThrowAmazingFireball();
+                else ThrowAmazingProjectile();
+                UpdateAmmoCount();
             }
         }
 
@@ -149,31 +115,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.LeftShift)) speed = 4f;
 
         // Afficher le menu "pause"
-        if(Input.GetKeyDown(KeyCode.Escape)) menuPause.SetActive(true);
-
-        // Vérifier si tous les aliments ont étés ramassés
-        if (_hasCheese && _hasAlgae && _hasMeat) YouWon();
-    }
-
-    /**
-     * Fonction pour gérer la victoire.
-     * Arrête la musique de fond, affiche l'écran de victoire et déclenche la fanfare
-     */
-    private void YouWon()
-    {
-        ToggleActive(new [] { GameObject.Find("BackgroundMusic").gameObject, wonImage, GameObject.Find("Enemies").gameObject });
-        PlaySound(fanfare);
-    }
-
-    /**
-     * Fonction pour gérer la défaite.
-     * Arrête la musique de fond, affiche l'écran de défaute et déclenche la musique de défaite
-     */
-    private void YouLost()
-    {
-        ToggleActive(new [] { GameObject.Find("BackgroundMusic").gameObject, lostImage, GameObject.Find("Enemies").gameObject });
-        PlaySound(lostFanfare);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        if(Input.GetKeyDown(KeyCode.Escape)) _gameManager.Ui.ToggleMenuPause();
     }
 
     /**
@@ -185,7 +127,7 @@ public class PlayerController : MonoBehaviour
             Quaternion.identity);
         Fireball projectile = projectileObject.GetComponent<Fireball>();
         projectile.Launch(_lookDirection, 600);
-        _animator.SetTrigger("Attack");
+        _animator.SetTrigger(Attack);
     }
 
     /**
@@ -197,7 +139,7 @@ public class PlayerController : MonoBehaviour
             Quaternion.identity);
         Projectile projectile = projectileObject.GetComponent<Projectile>();
         projectile.Launch(_lookDirection, 300);
-        _animator.SetTrigger("Attack");
+        _animator.SetTrigger(Attack);
     }
 
     /**
@@ -216,16 +158,7 @@ public class PlayerController : MonoBehaviour
             if (enemi2 != null) enemi2.Damage(300);
         }
         PlaySound(normalAttack);
-        _animator.SetTrigger("Attack");
-    }
-
-    /**
-     * Afficher la zone AOE autour du personnage, sur la Scène Unity
-     */
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(transform.position, _radiusOfAttack);
+        _animator.SetTrigger(Attack);
     }
 
     /**
@@ -242,15 +175,13 @@ public class PlayerController : MonoBehaviour
         PlaySound(deathScream);
 
         _deathNumber++;
-        _deathCounter.SetText($"Death : {_deathNumber}");
+        _gameManager.Ui.UpdateDeathScore(_deathNumber);
         UpdateLife(-1);
 
-        if (_lives < 0) YouLost();
+        if (_lives < 0) _gameManager.GameLost();
 
         // On retéléporte le joueur à l'entrée du niveau
-        _translation.x = 0;
-        _translation.y = -3.44f;
-        _rigidbody2D.position = _translation;
+        ResetPosition();
 
         // On désactive les caméra et on active la première, pour reprendre le focus sur le joueur
         if(cmv2.gameObject.activeSelf) cmv2.gameObject.SetActive(false);
@@ -277,48 +208,48 @@ public class PlayerController : MonoBehaviour
         if (_hasImprovedWeapon)
         {
             _hasUltimatePower = true;
-            bowImage.SetActive(false);
-            magicImage.SetActive(true);
+            _gameManager.Ui.UiMagic();
         }
         else
         {
             _hasImprovedWeapon = true;
-            swordImage.SetActive(false);
-            bowImage.SetActive(true);
+            _gameManager.Ui.UiBow();
         }
-    }
-
-    private void DestroyBridgeBlocking()
-    {
-        foreach (Transform barrel in GameObject.Find("BlockingBridge").transform)
-        {
-            barrel.GetComponent<ExplodingStuff>().Explode();
-        }
-
-        GameObject.Find("DarkWizard").gameObject.GetComponent<NpcController>().ToggleAvailability();
     }
 
     // Vérifie si on obtient le fromage
     public void ObtainedCheese()
     {
         _hasCheese = true;
-        cheeseImage.SetActive(true);
-        if (_hasAlgae) DestroyBridgeBlocking();
+        UpdateLife(1);
+        _gameManager.Ui.ToggleCheeseImage();
+        if (_hasAlgae) _gameManager.DestroyBridgeBlocking();
     }
 
     // Vérifie si on obtient l'algue
     public void ObtainedAlgae()
     {
         _hasAlgae = true;
-        algaeImage.SetActive(true);
-        if (_hasCheese) DestroyBridgeBlocking();
+        UpdateLife(1);
+        _gameManager.Ui.ToggleAlgaeImage();
+        if (_hasCheese) _gameManager.DestroyBridgeBlocking();
     }
 
     // Vérifie si on obtient la viande de zombie
     public void ObtainedMeat()
     {
         _hasMeat = true;
-        meatImage.SetActive(true);
+        _gameManager.Ui.ToggleMeatImage();
+        ResetPosition();
+        _gameManager.GameWon();
+        _audioSource.mute = true;
+    }
+
+    private void ResetPosition()
+    {
+        _translation.x = 0;
+        _translation.y = -3.44f;
+        _rigidbody2D.position = _translation;
     }
 
     // Met à jour le score
@@ -330,26 +261,14 @@ public class PlayerController : MonoBehaviour
             UpdateLife(_score / 100);
             _score -= 100;
         }
-        UpdateScoreDisplay();
+        _gameManager.Ui.UpdateScoreDisplay(_score);
     }
 
     // Met à jour les PV
     private void UpdateLife(int life)
     {
         _lives += life;
-        UpdateLivesDisplay();
-    }
-
-    // Met à jour le score visuellement
-    private void UpdateScoreDisplay()
-    {
-        scoreDisplay.SetText($"Score : {_score}");
-    }
-
-    // Met à jour le nombre de vies visuellement
-    private void UpdateLivesDisplay()
-    {
-        lifeDisplay.SetText($"Lives : {_lives}");
+        _gameManager.Ui.UpdateLivesDisplay(_lives);
     }
 
     public void EnableAoeWeapon()
@@ -364,7 +283,7 @@ public class PlayerController : MonoBehaviour
                 Quaternion.identity);
         AmazingFireball projectile = projectileObject.GetComponent<AmazingFireball>();
         projectile.Launch(_lookDirection, 600);
-        _animator.SetTrigger("Attack");
+        _animator.SetTrigger(Attack);
     }
 
     private void ThrowAmazingProjectile()
@@ -373,12 +292,12 @@ public class PlayerController : MonoBehaviour
                 Quaternion.identity);
         AmazingArrow projectile = projectileObject.GetComponent<AmazingArrow>();
         projectile.Launch(_lookDirection, 600);
-        _animator.SetTrigger("Attack");
+        _animator.SetTrigger(Attack);
     }
 
     private void UpdateAmmoCount()
     {
-        ammoCount.SetText($"{_aoeCount}");
-        if (_aoeCount == 0) ammoCount.color = Color.red;
+        --_aoeCount;
+        _gameManager.Ui.UpdateAmmoCount(_aoeCount);
     }
 }

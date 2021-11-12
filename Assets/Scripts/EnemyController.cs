@@ -9,7 +9,7 @@ public class EnemyController : MonoBehaviour
 {
     public float speed = 3f;
     public float lineOfSight = 6f;
-    private Transform player;
+    private Transform _player;
     public bool vertical;
     public float timerMax = 3.0f;
     private float _timer;
@@ -22,6 +22,8 @@ public class EnemyController : MonoBehaviour
     private int _healthPoint = 50;
 
     public AudioClip hit;
+    private static readonly int MoveX = Animator.StringToHash("MoveX");
+    private static readonly int MoveY = Animator.StringToHash("MoveY");
 
     private void Start()
     {
@@ -31,7 +33,7 @@ public class EnemyController : MonoBehaviour
 
         GameObject tmpPlayer = GameObject.FindGameObjectWithTag("Player");
         _playerController = tmpPlayer.GetComponent<PlayerController>();
-        player = tmpPlayer.transform;
+        _player = tmpPlayer.transform;
     }
 
     private void Update()
@@ -43,9 +45,9 @@ public class EnemyController : MonoBehaviour
             _timer = timerMax;
         }
 
-        float distanceFromPlayer = Vector2.Distance(player.position, transform.position);
+        float distanceFromPlayer = Vector2.Distance(_player.position, transform.position);
         if(distanceFromPlayer < lineOfSight)
-            transform.position = Vector2.MoveTowards(transform.position, player.position, speed * Time.deltaTime);
+            transform.position = Vector2.MoveTowards(transform.position, _player.position, speed * Time.deltaTime);
     }
 
     private void FixedUpdate()
@@ -55,14 +57,14 @@ public class EnemyController : MonoBehaviour
         if (vertical)
         {
             position.y += Time.deltaTime * speed * direction;
-            _animator.SetFloat("MoveX", 0);
-            _animator.SetFloat("MoveY", direction);
+            _animator.SetFloat(MoveX, 0);
+            _animator.SetFloat(MoveY, direction);
         }
         else
         {
             position.x += Time.deltaTime * speed * direction;
-            _animator.SetFloat("MoveX", direction);
-            _animator.SetFloat("MoveY", 0);
+            _animator.SetFloat(MoveX, direction);
+            _animator.SetFloat(MoveY, 0);
             if (position.x != 0)
             {
                 _spriteRenderer.flipX = position.x < 0;
