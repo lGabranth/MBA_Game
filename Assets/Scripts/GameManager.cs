@@ -9,7 +9,6 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
     private EnemiesManager _enemies;
 
-    public ScoreManager Score { get; private set; }
     public UIManager Ui { get; private set; }
     public AudioManager Audio { get; private set; }
 
@@ -23,7 +22,6 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
 
-        Score = GetComponent<ScoreManager>();
         Ui = GetComponent<UIManager>();
         Audio = GetComponent<AudioManager>();
         _enemies = GetComponent<EnemiesManager>();
@@ -31,10 +29,10 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        Score.Reset();
         _enemies.StartSpawning();
     }
 
+    // Détruit les barils qui bloque l'entrée de la dernière salle
     public void DestroyBridgeBlocking()
     {
         foreach (Transform barrel in GameObject.Find("BlockingBridge").transform)
@@ -58,6 +56,7 @@ public class GameManager : MonoBehaviour
         StartCoroutine(StartAgain());
     }
 
+    // Relance le jeu après la mort
     IEnumerator StartAgain()
     {
         yield return new WaitForSeconds(2.5f);

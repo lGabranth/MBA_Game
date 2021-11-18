@@ -25,8 +25,9 @@ public class MainMenu : MonoBehaviour
         _loadingGame = SceneManager.LoadSceneAsync("SampleScene");
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
+        // Permet d'afficher la progression de chargement du jeu.
         if (_hasClickedStart)
         {
             _progress = Mathf.Clamp01(_loadingGame.progress / 0.9f);

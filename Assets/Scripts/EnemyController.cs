@@ -45,6 +45,7 @@ public class EnemyController : MonoBehaviour
             _timer = timerMax;
         }
 
+        // Si l'enemi est proche du joueur, il lui fonce dessus
         float distanceFromPlayer = Vector2.Distance(_player.position, transform.position);
         if(distanceFromPlayer < lineOfSight)
             transform.position = Vector2.MoveTowards(transform.position, _player.position, speed * Time.deltaTime);

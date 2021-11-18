@@ -13,6 +13,7 @@ public class KillingPitController : MonoBehaviour
             player.Kill();
     }
 
+    // Active le KillingPit après avoir été trigger, permet au premier ennemi de passer
     private void OnTriggerExit2D(Collider2D other)
     {
         GetComponent<BoxCollider2D>().isTrigger = false;

@@ -1,11 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class DestroyableWallController : MonoBehaviour
 {
     private Animator _animator;
-    public GameObject Explosion;
+    [FormerlySerializedAs("Explosion")] public GameObject explosion;
     public AudioClip explode;
     private Rigidbody2D _rigidbody2D;
 
@@ -17,7 +18,7 @@ public class DestroyableWallController : MonoBehaviour
 
     public void Explode()
     {
-        Instantiate(Explosion, _rigidbody2D.position, Quaternion.identity);
+        Instantiate(explosion, _rigidbody2D.position, Quaternion.identity);
         GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>().PlaySound(explode);
         Destroy(gameObject);
     }

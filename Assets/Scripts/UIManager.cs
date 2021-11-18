@@ -63,12 +63,14 @@ public class UIManager : MonoBehaviour
         ToggleActive(new [] { lostImage, enemiesObject });
     }
 
+    // Désactive l'icône d'arc et active le bâton
     public void UiMagic()
     {
         bowImage.SetActive(false);
         magicImage.SetActive(true);
     }
 
+    // Désactive l'icône d'épée et active l'arc
     public void UiBow()
     {
         swordImage.SetActive(false);

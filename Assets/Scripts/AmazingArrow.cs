@@ -32,6 +32,7 @@ public class AmazingArrow : MonoBehaviour
 
         // Cercle autour de la zone d'explosion
         float radius = 2f;
+        // Créé des projectiles tout autour de la zone d'explosion
         for (int i = 0; i < 8; i++)
         {
             float angle = i * Mathf.PI*2f / 8;

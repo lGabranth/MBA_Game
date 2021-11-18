@@ -39,7 +39,6 @@ public class PlayerController : MonoBehaviour
     private bool _hasUltimatePower;
     private bool _hasCheese;
     private bool _hasAlgae;
-    private bool _hasMeat;
     private bool _aoeAttacks;
 
     /* SECTION AUDIO */
@@ -51,6 +50,8 @@ public class PlayerController : MonoBehaviour
     private int _deathNumber;
     private int _score; // Score (100 = 1 vie)
     private int _lives = 2; // Nombre de vies
+    private int _maxLives = 20;
+    private int _livesObtained;
     private float _radiusOfAttack = 2f; // Taille des AOE
     private int _aoeCount = 5;
     private static readonly int Attack = Animator.StringToHash("Attack");
@@ -238,7 +239,6 @@ public class PlayerController : MonoBehaviour
     // Vérifie si on obtient la viande de zombie
     public void ObtainedMeat()
     {
-        _hasMeat = true;
         _gameManager.Ui.ToggleMeatImage();
         ResetPosition();
         _gameManager.GameWon();
@@ -267,8 +267,12 @@ public class PlayerController : MonoBehaviour
     // Met à jour les PV
     private void UpdateLife(int life)
     {
-        _lives += life;
-        _gameManager.Ui.UpdateLivesDisplay(_lives);
+        if (_livesObtained < _maxLives)
+        {
+            if (life > 0) _livesObtained += life;
+            _lives += life;
+            _gameManager.Ui.UpdateLivesDisplay(_lives);
+        }
     }
 
     public void EnableAoeWeapon()

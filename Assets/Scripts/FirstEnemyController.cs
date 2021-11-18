@@ -6,12 +6,14 @@ public class FirstEnemyController : MonoBehaviour
 {
     public float speed = 7f;
     public float lineOfSight = 0.98f;
-    private Transform player;
+    private Transform _player;
     public int direction = 1;
 
     private Rigidbody2D _rigidbody2D;
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
+    private static readonly int MoveX = Animator.StringToHash("MoveX");
+    private static readonly int MoveY = Animator.StringToHash("MoveY");
 
     private void Start()
     {
@@ -19,16 +21,16 @@ public class FirstEnemyController : MonoBehaviour
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
 
-        player = GameObject.FindGameObjectWithTag("Player").transform;
+        _player = GameObject.FindGameObjectWithTag("Player").transform;
     }
 
     private void Update()
     {
-        float distanceFromPlayer = Vector2.Distance(player.position, transform.position);
+        float distanceFromPlayer = Vector2.Distance(_player.position, transform.position);
         if (distanceFromPlayer < lineOfSight)
         {
             speed = 14f;
-            transform.position = Vector2.MoveTowards(transform.position, player.position, speed * Time.deltaTime);
+            transform.position = Vector2.MoveTowards(transform.position, _player.position, speed * Time.deltaTime);
         }
     }
 
@@ -37,8 +39,8 @@ public class FirstEnemyController : MonoBehaviour
         Vector2 position = _rigidbody2D.position;
 
         position.y += Time.deltaTime * speed * direction;
-        _animator.SetFloat("MoveX", 0);
-        _animator.SetFloat("MoveY", direction);
+        _animator.SetFloat(MoveX, 0);
+        _animator.SetFloat(MoveY, direction);
 
         _rigidbody2D.MovePosition(position);
     }
@@ -56,7 +58,6 @@ public class FirstEnemyController : MonoBehaviour
         DestroyableWallController wall = collision.gameObject.GetComponent<DestroyableWallController>();
         if (wall != null)
         {
-
             Destroy(gameObject);
             wall.Explode();
         }
